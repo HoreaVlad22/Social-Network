@@ -7,7 +7,7 @@ import java.util.Objects;
  * @param <IDType> the generic type of the entity's identifier
  */
 public abstract class Entity<IDType> {
-    protected final IDType id;
+    protected  IDType id;
 
     public Entity(IDType id) { this.id = id; }
 
@@ -23,4 +23,10 @@ public abstract class Entity<IDType> {
 
     @Override
     public int hashCode() { return Objects.hashCode(id); }
+
+    public void setId(IDType id) {
+        this.id = id;
+    }
+
+
 }

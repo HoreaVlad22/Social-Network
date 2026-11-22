@@ -9,7 +9,7 @@ public class User extends Entity<Integer> {
     private String username;
     private String password;
 
-    public User(int id, String name, String surname, String username, String password) {
+    public User(Integer id, String name, String surname, String username, String password) {
         super(id);
         this.name = name;
         this.surname = surname;
@@ -21,4 +21,5 @@ public class User extends Entity<Integer> {
     public String getSurname() { return surname; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+
 }

@@ -32,13 +32,13 @@ public class UserUI {
             try {
                 switch (opt) {
                     case "1":
-                        System.out.print("ID: "); int id = Integer.parseInt(scanner.nextLine());
                         System.out.print("Nume: "); String name = scanner.nextLine();
                         System.out.print("Prenume: "); String surname = scanner.nextLine();
                         System.out.print("User: "); String user = scanner.nextLine();
                         System.out.print("Pass: "); String pass = scanner.nextLine();
-                        userService.addUser(id, name, surname, user, pass);
-                        System.out.println("Adaugat cu succes!"); break;
+                        domain.entities.User added = userService.addUser(name, surname, user, pass);
+                        System.out.println("Adaugat cu succes! ID generat: " + added.getId());
+                        break;
                     case "2":
                         System.out.print("ID: "); int delId = Integer.parseInt(scanner.nextLine());
                         friendshipService.removeFriendshipsOfUser(delId);
