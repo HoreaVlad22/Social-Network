@@ -1,0 +1,137 @@
+package service;
+
+import domain.entities.User;
+import domain.exceptions.RepositoryException;
+import repository.Repository;
+import utils.StreamUtils;
+import utils.UserCriteria;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * Service for managing User operations.
+ */
+public class UserService {
+    private final Repository<Integer, User> userRepo;
+
+    /**
+     * Creates a UserService backed by the given repository.
+     * @param userRepo the user repository
+     */
+    public UserService(Repository<Integer, User> userRepo) {
+        this.userRepo = userRepo;
+    }
+
+    /**
+     * Adds a new user.
+     * @param id the id
+     * @param name the name
+     * @param surname the surname
+     * @param username the username
+     * @param password the password
+     * @throws RepositoryException if the user ID already exists
+     */
+    public void addUser(int id, String name, String surname, String username, String password) {
+        userRepo.add(new User(id, name, surname, username, password))
+                .ifPresent(existing -> {
+                    throw new RepositoryException("Utilizatorul cu acest ID exista deja!");
+                });
+    }
+
+    /**
+     * Removes a user by ID.
+     * @param id the id of the user
+     * @throws RepositoryException if the user does not exist
+     */
+    public void removeUser(int id) {
+        userRepo.delete(id)
+                .orElseThrow(() -> new RepositoryException("Utilizatorul nu exista!"));
+    }
+
+    /**
+     * Finds a user by ID.
+     * @param id the user ID
+     * @return an {@code Optional} containing the found user, or empty if not found
+     */
+    public Optional<User> findUserById(int id) {
+        return userRepo.findOne(id);
+    }
+
+    /**
+     * Finds the first user matching the given username (case-insensitive).
+     * @param username the username to search for
+     * @return an {@code Optional} containing the matching user, or empty if none found
+     */
+    public Optional<User> findUserByUsername(String username) {
+        return StreamUtils.toStream(userRepo.findAll())
+                .filter(UserCriteria.hasName(username))
+                .findFirst();
+    }
+
+    /**
+     * Finds all users matching both the given name and surname.
+     * @param name the name to match
+     * @param surname the surname to match
+     * @return a list of matching users
+     */
+    public List<User> findUsersByFullName(String name, String surname) {
+        return userRepo.findAll(UserCriteria.hasName(name).and(UserCriteria.hasSurname(surname)));
+    }
+
+    /**
+     * Retrieves all users whose username does not start with the given prefix.
+     * @param prefix the excluded username prefix
+     * @return a list of users not matching the prefix
+     */
+    public List<User> getUsersExcludingUsernamePrefix(String prefix) {
+        return userRepo.findAll(UserCriteria.usernameStartsWith(prefix).negate());
+    }
+
+    /**
+     * Retrieves all users that have a strong password.
+     * @return a list of users with strong passwords
+     */
+    public List<User> getUsersWithStrongPassword() {
+        return userRepo.findAll(UserCriteria::hasStrongPassword);
+    }
+
+    /**
+     * Retrieves all users that do not have a strong password.
+     * @return a list of users with weak passwords
+     */
+    public List<User> getUsersWithWeakPassword() {
+        return userRepo.findAll(Predicate.not(UserCriteria::hasStrongPassword));
+    }
+
+    /**
+     * Retrieves all users.
+     * @return an iterable of all users
+     */
+    public Iterable<User> getAllUsers() {
+        return userRepo.findAll();
+    }
+
+    /**
+     * Filters users based on the given predicate.
+     * @param criteria a {@code Predicate} specifying the filtering condition
+     * @return a list of users matching the criteria
+     */
+    public List<User> filterUsers(Predicate<User> criteria) {
+        return userRepo.findAll(criteria);
+    }
+
+    /**
+     * Retrieves all users sorted alphabetically by name, then by surname.
+     * @return a sorted list of users
+     */
+    public List<User> getAllUsersSorted() {
+        return StreamUtils.toStream(userRepo.findAll())
+                .sorted(Comparator.comparing(User::getName)
+                        .thenComparing(User::getSurname))
+                .collect(Collectors.toList());
+    }
+}
